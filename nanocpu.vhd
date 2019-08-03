@@ -40,14 +40,13 @@ begin
                 -- `reg_addr` holds seg_prg + PC output
                 -- `data` holds inst
                 pc <= std_logic_vector(unsigned(reg_addr(5 downto 0)) + 1);
-                if use_scratch = '1' then
+                if data(7 downto 6) = "11" then
+                    reg_addr <= seg_prg & data(5 downto 0);
+                elsif use_scratch = '1' then
                     reg_addr <= "00010000" & data(5 downto 0);
                 else
                     reg_addr <= seg_dat & data(5 downto 0);
                 end if;
-            elsif (states = "111") then 
-                -- branch
-                reg_addr <= seg_prg & data(5 downto 0);
             else
                 -- output instruction addr
                 reg_addr <= seg_prg & pc;
@@ -64,33 +63,28 @@ begin
             end case;
 
             -- Control logic
-            if (states /= "000" and states /= "111") then
+            if (states /= "000") then
                 -- Not in inst fetch stage, just output instruction addr (above)
-                states <= "000";
-            elsif (states = "111") then
                 states <= "000";
             elsif (data(7 downto 0) = "11111100") then
                 -- SWD (Switch to data space)
                 use_scratch <= '0';
-                states <= "000";
+                states <= "110";
             elsif (data(7 downto 0) = "11111101") then
                 -- SWS (Switch to scratch space)
                 use_scratch <= '1';
-                states <= "000";
+                states <= "110";
             elsif (data(7 downto 0) = "11111111") then
                 -- LPS (Load Program Segment register)
                 seg_prg <= acc(7 downto 0);
-                states <= "000";
+                states <= "110";
             elsif (data(7 downto 0) = "11111110") then
                 -- LDS (Load Data Segment register)
                 seg_dat <= acc(7 downto 0);
-                states <= "000";
+                states <= "110";
             elsif (data(7 downto 6) = "11" and acc(8) = '1') then
                 -- 101 - 11 JCC (not taken, output disable)
                 states <= "101";
-            elsif (data(7 downto 6) = "11" and acc(8) = '0') then
-                -- 111 - 11 JCC (taken, output inst address)
-                states <= "111";
             else
                 -- 011 - 00 NOR
                 -- 010 - 01 ADD
@@ -103,6 +97,6 @@ begin
     -- SRAM output
     address <= reg_addr;
     data <= "ZZZZZZZZ" when states /= "001" else acc(7 downto 0);
-    oe <= '1' when (clk = '1' or states = "001" or states = "101" or rst = '0') else '0';
+    oe <= '1' when (clk = '1' or states = "001" or states = "101" or states = "110" or rst = '0') else '0';
     we <= '1' when (clk = '1' or states /= "001" or rst = '0') else '0';
 end arch_nanocpu;

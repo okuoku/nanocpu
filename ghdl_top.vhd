@@ -32,9 +32,17 @@ begin
         address => address,
         oe => oe,
         we => we,
-        clk => clk,
         rst => rst);
 
+
+    -- Reset logic
+    resetlogic: process
+    begin
+        rst <= '0';
+        wait for clk_period;
+        rst <= '1';
+        wait;
+    end process;
 
     -- Clocking
     clocking: process
