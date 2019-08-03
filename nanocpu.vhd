@@ -36,9 +36,7 @@ begin
             use_scratch <= '0';
         elsif rising_edge(clk) then
             -- Address generation
-            if (states = "000") then
-                -- `reg_addr` holds seg_prg + PC output
-                -- `data` holds inst
+            if (states = "000") then -- Inst cycle
                 pc <= std_logic_vector(unsigned(reg_addr(5 downto 0)) + 1);
                 if data(7 downto 6) = "11" then
                     reg_addr <= seg_prg & data(5 downto 0);
@@ -47,8 +45,10 @@ begin
                 else
                     reg_addr <= seg_dat & data(5 downto 0);
                 end if;
-            else
-                -- output instruction addr
+            elsif (states = "111") then -- Program Bank switch
+                pc <= (others => '0');
+                reg_addr <= seg_prg & "000000";
+            else -- output instruction addr
                 reg_addr <= seg_prg & pc;
             end if;
 
@@ -58,7 +58,6 @@ begin
                 when "011" => acc(7 downto 0) <= acc(7 downto 0) nor data;
                 -- add
                 when "010" => acc <= std_logic_vector(unsigned("0" & acc(7 downto 0)) + unsigned("0" & data));
-                -- (no ALU)
                 when others => null;
             end case;
 
@@ -77,18 +76,15 @@ begin
             elsif (data(7 downto 0) = "11111111") then
                 -- LPS (Load Program Segment register)
                 seg_prg <= acc(7 downto 0);
-                states <= "110";
+                states <= "111";
             elsif (data(7 downto 0) = "11111110") then
                 -- LDS (Load Data Segment register)
                 seg_dat <= acc(7 downto 0);
                 states <= "110";
             elsif (data(7 downto 6) = "11" and acc(8) = '1') then
-                -- 101 - 11 JCC (not taken, output disable)
+                -- JCC (not taken, output disable)
                 states <= "101";
             else
-                -- 011 - 00 NOR
-                -- 010 - 01 ADD
-                -- 001 - 10 STA
                 states <= "0" & not data(7 downto 6);
             end if;
         end if;
@@ -97,6 +93,6 @@ begin
     -- SRAM output
     address <= reg_addr;
     data <= "ZZZZZZZZ" when states /= "001" else acc(7 downto 0);
-    oe <= '1' when (clk = '1' or states = "001" or states = "101" or states = "110" or rst = '0') else '0';
+    oe <= '1' when (clk = '1' or states = "001" or states = "101" or states = "110" or states = "111" or rst = '0') else '0';
     we <= '1' when (clk = '1' or states /= "001" or rst = '0') else '0';
 end arch_nanocpu;

@@ -28,9 +28,9 @@ static char rom0_data[] = {
     /* 26 */ SWD, 
     /* 27 */ STA(0), 
     /* 28 */ SWS, 
-    /* 29 */ NOR(SCR_ALLONE), /* DA0-0: Halt */
-    /* 30 */ SWD, 
-    /* 31 */ STA(0), 
+    /* 29 */ NOR(SCR_ALLONE),
+    /* 30 */ ADD(SCR_ONE), 
+    /* 31 */ LPS,       /* Switch to bank 1 */
     /* 32 */ JCC(32), 
     /* 33 */ JCC(32), 
     /* 34 */ 0, 

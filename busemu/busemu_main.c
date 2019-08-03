@@ -34,6 +34,7 @@ static unsigned char romram_attr[ROMRAMSIZE];
 
 #include "scrdefs.h"
 #include "rom0.inc.c"
+#include "rom1.inc.c"
 
 typedef int (*bushandler_t)(int addr, int datain, int we);
 
@@ -114,8 +115,9 @@ load_roms(void){
         romram_attr[i] = ATTR_UNINIT;
     }
 
-    /* Rom0 */
+    /* Roms */
     fillrom(0, rom0_data);
+    fillrom(1, rom1_data);
 }
 
 int
