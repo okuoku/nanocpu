@@ -116,8 +116,8 @@ load_roms(void){
     }
 
     /* Roms */
-    fillrom(0, rom0_data);
-    fillrom(1, rom1_data);
+    fillrom(128, rom0_data);
+    fillrom(129, rom1_data);
 }
 
 int

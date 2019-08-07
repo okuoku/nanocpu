@@ -13,13 +13,13 @@ static char rom0_data[] = {
     /* 11 */ STA(SCR_THREE),  /* 3 */
     /* 12 */ ADD(SCR_ONE), 
     /* 13 */ STA(SCR_FOUR),   /* 4 */
-    /* 14 */ JCC(21), 
-    /* 15 */ JCC(21), 
-    /* 16 */ 0, 
-    /* 17 */ 0, 
-    /* 18 */ 0, 
-    /* 19 */ 0, 
-    /* 20 */ 0, 
+    /* 14 */ SWD,       /* Switch to Data (= rom0) */
+    /* 15 */ NOR(62),   /* Clear ACC */
+    /* 16 */ ADD(63),   /* Load 128 */
+    /* 17 */ SWS, 
+    /* 18 */ STA(SCR_128), 
+    /* 19 */ JCC(21), 
+    /* 20 */ JCC(21), 
     /* 21 */ NOR(SCR_ALLONE), 
     /* 22 */ ADD(SCR_FOUR), /* 4: Debug adapter */
     /* 23 */ LDS, 
@@ -29,11 +29,11 @@ static char rom0_data[] = {
     /* 27 */ STA(0), 
     /* 28 */ SWS, 
     /* 29 */ NOR(SCR_ALLONE),
-    /* 30 */ ADD(SCR_ONE), 
-    /* 31 */ LPS,       /* Switch to bank 1 */
-    /* 32 */ JCC(32), 
+    /* 30 */ ADD(SCR_128), 
+    /* 31 */ ADD(SCR_ONE),
+    /* 32 */ LPS,           /* Switch to back 129 */
     /* 33 */ JCC(32), 
-    /* 34 */ 0, 
+    /* 34 */ JCC(32), 
     /* 35 */ 0, 
     /* 36 */ 0, 
     /* 37 */ 0, 
@@ -61,6 +61,6 @@ static char rom0_data[] = {
     /* 59 */ 0, 
     /* 60 */ 0, 
     /* 61 */ 0, 
-    /* 62 */ 0, 
-    /* 63 */ 0, 
+    /* 62 */ 255,  /* ALLONE */
+    /* 63 */ 128,  /* 128 */
 };
