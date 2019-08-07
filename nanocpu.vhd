@@ -27,12 +27,12 @@ begin
     process(clk, rst)
     begin
         if (rst = '0') then
-            reg_addr <= (others => '0');
+            reg_addr <= "10000000000000";
             states <= "000";
             acc <= (others => '0');
             pc <= (others => '0');
-            seg_dat <= (others => '0');
-            seg_prg <= (others => '0');
+            seg_dat <= "10000000";
+            seg_prg <= "10000000";
             use_scratch <= '0';
         elsif rising_edge(clk) then
             -- Address generation
@@ -41,7 +41,7 @@ begin
                 if data(7 downto 6) = "11" then
                     reg_addr <= seg_prg & data(5 downto 0);
                 elsif use_scratch = '1' then
-                    reg_addr <= "00010000" & data(5 downto 0);
+                    reg_addr <= "00000000" & data(5 downto 0);
                 else
                     reg_addr <= seg_dat & data(5 downto 0);
                 end if;
