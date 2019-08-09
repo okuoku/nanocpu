@@ -10,6 +10,7 @@ entity nanocpu is port (
     address: out std_logic_vector(13 downto 0);
     oe: out std_logic;
     we: out std_logic;
+    int: in std_logic;
     clk: in std_logic;
     rst: in std_logic);
 end;
@@ -21,6 +22,7 @@ architecture arch_nanocpu of nanocpu is
     signal states: std_logic_vector(2 downto 0);
 
     signal use_scratch: std_logic;
+    signal in_intr: std_logic;
     signal seg_dat: std_logic_vector(7 downto 0);
     signal seg_prg: std_logic_vector(7 downto 0);
 begin
@@ -34,6 +36,7 @@ begin
             seg_dat <= "10000000";
             seg_prg <= "10000000";
             use_scratch <= '0';
+            in_intr <= '0';
         elsif rising_edge(clk) then
             -- Address generation
             if (states = "000") then -- Inst cycle
@@ -58,6 +61,9 @@ begin
                 when "011" => acc(7 downto 0) <= acc(7 downto 0) nor data;
                 -- add
                 when "010" => acc <= std_logic_vector(unsigned("0" & acc(7 downto 0)) + unsigned("0" & data));
+                -- clear carry
+                when "101" => acc(8) <= '0';
+                when "111" => acc(8) <= '0';
                 when others => null;
             end case;
 
@@ -75,7 +81,14 @@ begin
                 states <= "110";
             elsif (data(7 downto 0) = "11111111") then
                 -- LPS (Load Program Segment register)
-                seg_prg <= acc(7 downto 0);
+                if (int = '0' and in_intr = '0') then
+                    seg_prg <= "10000000";
+                    in_intr <= '1';
+                else
+                    seg_prg <= acc(7 downto 0);
+                    in_intr <= acc(8); -- leave intr if carry clear
+                end if;
+                use_scratch <= '0';
                 states <= "111";
             elsif (data(7 downto 0) = "11111110") then
                 -- LDS (Load Data Segment register)
