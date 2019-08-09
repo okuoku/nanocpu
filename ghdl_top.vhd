@@ -12,7 +12,6 @@ architecture arch of ghdl_top is
     signal address: std_logic_vector(13 downto 0);
     signal oe: std_logic;
     signal we: std_logic;
-    signal int: std_logic;
 
     -- Clock speed
     constant clk_period: time := 10 ns;
@@ -24,7 +23,6 @@ begin
         address => address,
         oe => oe,
         we => we,
-        int => int,
         clk => clk,
         rst => rst);
 
@@ -55,6 +53,4 @@ begin
         wait for clk_period/2;
     end process;
 
-    -- Interrupt
-    int <= '1';
 end arch;
