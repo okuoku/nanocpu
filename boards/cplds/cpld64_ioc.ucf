@@ -1,0 +1,39 @@
+NET "clk" LOC = P43; # GCLK0
+NET "rst" LOC = P30; # GSR
+
+# Data path (FB3)
+NET "data<0>" LOC = P18;
+NET "data<1>" LOC = P19;
+NET "data<2>" LOC = P20;
+NET "data<3>" LOC = P21;
+NET "data<4>" LOC = P22;
+NET "data<5>" LOC = P23;
+NET "data<6>" LOC = P27;
+NET "data<7>" LOC = P28;
+
+NET "address<0>" LOC = P5;
+NET "address<1>" LOC = P6;
+NET "address<2>" LOC = P8;
+NET "address<3>" LOC = P12;
+NET "address<4>" LOC = P13;
+NET "address<5>" LOC = P14;
+NET "bank<0>" LOC = P16;
+NET "bank<1>" LOC = P38;
+NET "bank<2>" LOC = P37;
+NET "bank<3>" LOC = P36;
+NET "bank<4>" LOC = P34;
+NET "xoe" LOC = P33;
+NET "rgn<0>" LOC = P32;
+NET "rgn<1>" LOC = P31;
+NET "xwe" LOC = P29;
+
+NET "csel<0>" LOC = P1;
+NET "csel<1>" LOC = P2;
+NET "csel<2>" LOC = P3;
+NET "csel<3>" LOC = P44;
+NET "address<6>" LOC = P41;
+NET "spi_hold" LOC = P42;
+
+NET "srst" LOC = P39; # CPU Reset
+NET "we" LOC = P40;
+
