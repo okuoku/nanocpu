@@ -28,12 +28,14 @@ begin
             bank2 <= "01000000"; -- nRST makes bank2 as ROM
             bank3 <= (others => '0');
         elsif falling_edge(we_in) then
-            if (address = "000") then
-                bank1 <= data_in;
-            elsif (address = "001") then
-                bank2 <= data_in;
-            elsif (address = "010") then
-                bank3 <= data_in;
+            if rgn = "11" then
+                if (address = "000") then
+                    bank1 <= data_in;
+                elsif (address = "001") then
+                    bank2 <= data_in;
+                elsif (address = "010") then
+                    bank3 <= data_in;
+                end if;
             end if;
         end if;
     end process;
