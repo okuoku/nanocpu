@@ -1,9 +1,5 @@
--- INCOMPLETE
-
-
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity ioc_spi is port (
     rst: in std_logic;
@@ -12,125 +8,143 @@ entity ioc_spi is port (
     data_in: in std_logic_vector(7 downto 0);
     data_out: out std_logic_vector(7 downto 0);
     we: in std_logic;
-    address: in std_logic_vector(2 downto 0);
+    address: in std_logic_vector(1 downto 0);
     -- SPI
-    csel: out std_logic_vector(3 downto 0);
+    ss: out std_logic_vector(3 downto 0);
     int: in std_logic_vector(3 downto 0);
     sclk: out std_logic;
-    si: in std_logic;
-    so: out std_logic);
+    miso: in std_logic;
+    mosi: out std_logic);
 end;
 
+--
+-- Registers:
+-- (Read)
+--  0: Data
+--  1: Status
+--           A - Activity
+--          B  - Data busy
+--        00   - Zero (reserved)
+--    IIII     - Interrupt status
+--
+--
+-- (Write)
+--  0: Data (Write dummy data to read next)
+--  1: Configuration port
+--         CC - Chip select
+--        E   - Enable
+
 architecture arch_ioc_spi of ioc_spi is
-    signal dir: std_logic;
-    signal cur: std_logic_vector(1 downto 0);
-    signal reg: std_logic_vector(7 downto 0);
-    signal buf: std_logic_vector(7 downto 0);
-    signal buf_addr: std_logic_vector(2 downto 0);
+    signal toggle_data_bus: std_logic;
+    signal toggle_data_sr: std_logic;
+    signal toggle_config_bus: std_logic;
+    signal toggle_config_sr: std_logic;
 
-    signal target: std_logic_vector(3 downto 0);
-    -- FIXME: FSM did not infered with this...
-    -- type type_state is (s0,s1,s2,s3,s4,s5,s6,s7,empty);
-    -- signal state: type_state;
-    signal state: std_logic_vector(3 downto 0);
-    signal write_active: std_logic;
-    signal read_active: std_logic;
-    signal serial_active: std_logic;
-    signal serial_select: std_logic;
+    -- SPI
+    signal config_ss: std_logic_vector(3 downto 0);
 
-    signal reg_cntl: std_logic_vector(7 downto 0);
-    signal reg_intr: std_logic_vector(7 downto 0);
-    signal intr_active: std_logic;
-    signal intr_status: std_logic_vector(3 downto 0);
+    -- SR
+    signal data_busy: std_logic;
+    signal active: std_logic;
+    signal sr_ss: std_logic;
+    signal sr_data_in: std_logic_vector(7 downto 0);
+    signal sr_data_in_rdy: std_logic;
+    signal sr_data_in_ack: std_logic;
+    signal sr_data_out: std_logic_vector(7 downto 0);
+    signal sr_data_out_rdy: std_logic;
+
+    -- SRAM I/F
+    signal config_enable: std_logic;
+    signal config_chip: std_logic_vector(1 downto 0);
+    signal wq: std_logic_vector(7 downto 0);
+    signal rq: std_logic_vector(7 downto 0);
 begin
-    SR: process(clk, rst)
-    begin
-        if (rst = '0') then
-            reg <= (others => '0');
-            write_active <= '0';
-            read_active <= '0';
-            state <= "1001";
-            serial_select <= '0';
-            
-        elsif rising_edge(clk) then
-            if state = "0000" then
-                state <= "0001";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0001" then
-                state <= "0010";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0010" then
-                state <= "0011";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0011" then
-                state <= "0100";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0100" then
-                state <= "0101";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0101" then
-                state <= "0110";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0110" then
-                state <= "0111";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "0111" then
-                state <= "1000";
-                reg <= reg(6 downto 0) & si;
-            elsif state = "1000" then
-                state <= "1001";
-                read_active <= '0';
-                write_active <= '0';
-            elsif serial_active = '1' then
-                state <= "0000";
-            else 
-                -- Bus I/F
-                if buf_addr = "010" then
-                    intr_status <= intr_status nor buf(3 downto 0);
-                elsif buf_addr = "011" then
-                    serial_select <= buf(3);
-                    dir <= buf(2);
-                    cur <= buf(1 downto 0);
-                elsif serial_active = '0' and buf_addr = "000" then
-                    if dir = '0' then
-                        read_active <= '1';
-                    else
-                        write_active <= '1';
-                    end if;
-                    reg <= buf(7 downto 0);
-                end if;
-            end if;
+    SR: entity work.spi_sr
+    port map(
+        clk => clk,
+        ss => sr_ss,
+        -- Data
+        data_in => sr_data_in,
+        data_in_ack => sr_data_in_ack,
+        data_in_rdy => sr_data_in_rdy,
+        data_out => sr_data_out,
+        data_out_rdy => sr_data_out_rdy,
 
-        end if;
-    end process;
+        -- SPI
+        sclk => sclk,
+        si => miso,
+        so => mosi);
 
-    BUSIF: process(rst,we)
+    sr_data_in_rdy <= '0' when data_busy = '1' else '1';
+    sr_data_in <= wq;
+
+    -- SPI I/F
+    process(rst, clk)
     begin
         if rst = '0' then
-            buf_addr <= "111";
-        elsif falling_edge(we) then
-           -- register write
-            buf_addr <= address;
-            buf <= data_in;
+            toggle_data_sr <= '0';
+            toggle_config_sr <= '0';
+            config_ss <= "1111";
+        elsif rising_edge(clk) then
+            -- config > data priority to ensure 1clk for select pulse
+            if toggle_config_bus /= toggle_config_sr then
+                if config_enable = '0' then
+                    config_ss <= "1111";
+                else
+                    if config_chip = "00" then
+                        config_ss <= "1110";
+                    elsif config_chip = "01" then
+                        config_ss <= "1101";
+                    elsif config_chip = "10" then
+                        config_ss <= "1011";
+                    else
+                        config_ss <= "0111";
+                    end if;
+                    toggle_config_sr <= toggle_config_bus;
+                end if;
+            elsif toggle_data_bus /= toggle_data_sr then
+                if sr_data_in_ack = '1' then
+                    toggle_data_sr <= toggle_data_bus;
+                end if;
+            end if;
+            if sr_data_out_rdy = '1' then
+                rq <= sr_data_out;
+            end if;
         end if;
     end process;
 
-    -- Register interface
-    reg_cntl <= "00000" & serial_select & serial_active & intr_active;
-    reg_intr <= "0000" & intr_status;
-    intr_active <= '0' when intr_status = "0000" else '1';
+    active <= '1' when sr_ss = '0' else '1';
+    data_busy <= '0' when toggle_data_bus = toggle_data_sr else '1';
+    sr_ss <= '1' when config_ss = "1111" else '0';
+    ss <= config_ss;
 
-    data_out <= reg_cntl when address = "001" else
-                reg_intr when address = "010" else
-                reg;
+    -- SRAM Register I/F
+    process(rst, we)
+    begin
+        if rst = '0' then
+            toggle_data_bus <= '0';
+            toggle_config_bus <= '0';
+        elsif falling_edge(we) then
+            if address = "00" then
+                if toggle_data_bus = '1' then
+                    toggle_data_bus <= '0';
+                else
+                    toggle_data_bus <= '1';
+                end if;
+                wq <= data_in;
+            elsif address = "01" then
+                if toggle_config_bus = '1' then
+                    toggle_config_bus <= '0';
+                else
+                    toggle_config_bus <= '1';
+                end if;
+                config_chip <= data_in(1 downto 0);
+                config_enable <= data_in(2);
+            end if;
+        end if;
+    end process;
 
-    -- Serial interface
-    so <= reg(7) when write_active = '1' else 'Z';
-    serial_active <= '1' when read_active = '1' or write_active = '1' else '0';
-    sclk <= '1' when clk = '0' and serial_active = '1' else '0';
-    csel <= "1111" when serial_select = '0' else
-            "1110" when cur = "00" else
-            "1101" when cur = "01" else
-            "1011" when cur = "10" else
-            "0111" when cur = "11";
+    data_out <= int & "00" & data_busy & active when address = "01"
+                else rq;
+
 end arch_ioc_spi;
