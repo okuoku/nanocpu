@@ -39,7 +39,7 @@ Instructions
 
 Standard OPs: `NOR` `ADD` `STA` `JCC`
 
-Extended OPs: `SWD` `SWS` `LDS` LPS`
+Extended OPs: `SWD` `SWS` `LDS` `LPS`
 
 Standard OPs(memory instructions) will take 6bit operand.
 Every memory operand will be concatinated with `DS`, scratchpad location or `PS` register.
