@@ -1,6 +1,3 @@
--- INCOMPLETE 
-
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -22,99 +19,131 @@ entity ioc_boot is port (
 end;
 
 architecture arch_ioc_boot of ioc_boot is
-    signal done: std_logic;
-    type type_state is (spi_start, spi_select,
-                        command_send, command_wait, 
-                        address_send, address_wait, 
-                        xfer_start, xfer_wait, xfer_write, xfer_next,
-                        spi_leave);
-    signal state: type_state;
+    type type_busturn is (silent, 
+                          spi_select,
+                          spi_control_read, spi_control_write,
+                          spi_data_write, 
+                          ram_select, copy);
+    signal busturn: type_busturn;
     attribute fsm_encoding : string;
+    attribute fsm_encoding of busturn: signal is "compact";
+
+    type type_state is (spi_on,
+                        spi_start, spi_select_send, spi_select_wait,
+                        command_send, command_wait, 
+                        address0_send, address0_wait, 
+                        address1_send, address1_wait, 
+                        address2_send, address2_wait, 
+                        xfer_start, xfer_wait, xfer_write, 
+                        xfer_next0, xfer_next1,
+                        cpu_activate);
+    signal state: type_state;
     attribute fsm_encoding of state: signal is "compact";
-    signal want_read_control: std_logic;
-    signal has_spi_write_data: std_logic;
-    signal has_ram_write_data: std_logic;
-    signal ptr: std_logic_vector(5 downto 0);
+    signal ptr: std_logic_vector(6 downto 0);
 begin
     process (rst, clk)
     begin 
         if(rst = '0') then
-            done <= '0';
-            ptr <= "000000";
-            csel_ram <= '1';
-            csel_spi <= '1';
-            state <= spi_start;
-            spi_hold <= '1';
+            ptr <= "0000000";
+            state <= spi_on;
+            busturn <= silent;
         elsif rising_edge(clk) then
-            if (done = '0') then
-                if state = spi_start then
-                    data_out <= "11110000"; -- FIXME
-                    csel_spi <= '0';
-                    state <= spi_select;
-                elsif state = spi_select then
-                    state <= command_send;
-                    data_out <= "10000000"; -- FIXME
-                    csel_spi <= '0';
-                elsif state = command_send then
-                    state <= command_wait;
-                elsif state = command_wait then
-                    if data_in(1) = '0' then
-                        state <= address_send;
-                        data_out <= (others => '0');
-                    end if;
-                elsif state = address_send then
-                    state <= address_wait;
-                elsif state = address_wait then
-                    if data_in(1) = '0' then
-                        ptr <= (others => '0');
-                        state <= xfer_start;
-                    end if;
-                elsif state = xfer_start then
-                    state <= xfer_wait;
-                    spi_hold <= '0';
-                elsif state = xfer_wait then
-                    state <= xfer_write;
-                elsif state = xfer_write then
-                    ptr <= std_logic_vector(unsigned(ptr) + 1);
-                    state <= xfer_next;
-                    csel_ram <= '0';
-                    spi_hold <= '0';
-                elsif state = xfer_next then
-                    if ptr = "111111" then
-                        done <= '1';
-                    end if;
-                    state <= spi_leave;
-                    csel_ram <= '1';
-                elsif state = spi_leave then
-                    -- do nothing
+            if state = spi_on then
+                state <= spi_start;
+                busturn <= spi_select;
+            elsif state = spi_start then
+                data_out <= "00000100"; -- Chip select 00, Enable
+                state <= spi_select_send;
+                busturn <= spi_control_write;
+            elsif state = spi_select_send then
+                state <= spi_select_wait;
+                busturn <= silent;
+            elsif state = spi_select_wait then
+                state <= command_send;
+                data_out <= "00000011"; -- Read command ($03)
+                busturn <= spi_data_write;
+            elsif state = command_send then
+                state <= command_wait;
+                busturn <= spi_control_read;
+            elsif state = command_wait then
+                if data_in(0) = '0' then
+                    state <= address0_send;
+                    data_out <= "00000000"; -- Address 0 (0)
+                    busturn <= spi_data_write;
                 end if;
+            elsif state = address0_send then
+                state <= address0_wait;
+                busturn <= spi_control_read;
+            elsif state = address0_wait then
+                if data_in(0) = '0' then
+                    state <= address1_send;
+                    data_out <= "00000000"; -- Address 0 (0)
+                    busturn <= spi_data_write;
+                end if;
+            elsif state = address1_send then
+                state <= address1_wait;
+                busturn <= spi_control_read;
+            elsif state = address1_wait then
+                if data_in(0) = '0' then
+                    state <= address2_send;
+                    data_out <= "00000000"; -- Address 0 (0)
+                    busturn <= spi_data_write;
+                end if;
+            elsif state = address2_send then
+                state <= address2_wait;
+                busturn <= spi_control_read;
+            elsif state = address2_wait then
+                if data_in(0) = '0' then
+                    state <= xfer_start;
+                    data_out <= "00000000"; -- Address 0 (0)
+                    busturn <= spi_data_write;
+                end if;
+            elsif state = xfer_start then
+                state <= xfer_wait;
+                busturn <= spi_control_read;
+            elsif state = xfer_wait then
+                if data_in(0) = '0' then
+                    state <= xfer_write;
+                    busturn <= ram_select;
+                end if;
+            elsif state = xfer_write then
+                state <= xfer_next0;
+                busturn <= copy;
+            elsif state = xfer_next0 then
+                if ptr = "1111111" then
+                    state <= cpu_activate;
+                else
+                    state <= xfer_next1;
+                end if;
+                ptr <= std_logic_vector(unsigned(ptr) + 1);
+                busturn <= silent;
+            elsif state = xfer_next1 then
+                data_out <= "00000000"; -- Dummy data
+                state <= xfer_start;
+                busturn <= spi_data_write;
+            elsif state = cpu_activate then
+                busturn <= silent;
             end if;
         end if;
     end process;
 
-    has_spi_write_data <= '1' when
-                          state = command_send or
-                          state = address_send else
-                          '0';
+    address <= "0000000" when busturn = spi_data_write else
+               "0000001" when busturn = spi_control_read or 
+                              busturn = spi_control_write else
+               ptr       when busturn = copy else
+               "0000000";
 
-    has_ram_write_data <= '1' when
-                          state = xfer_write else
-                          '0';
 
-    want_read_control <= '1' when 
-                         state = command_wait or
-                         state = address_wait or
-                         state = xfer_wait else
-                         '0';
+    spi_hold <= '0' when busturn = copy else '1';
+    csel_ram <= '0' when busturn = copy or busturn = ram_select else '1';
+    csel_spi <= '0' when busturn = spi_select or busturn = spi_control_read
+                or busturn = spi_control_write or busturn = spi_data_write
+               else '1';
+    we <= '0' when clk = '1' and (busturn = spi_control_write or
+                                  busturn = spi_data_write or
+                                  busturn = copy) else '1';
+    oe <= '0' when busturn = spi_control_read else '1';
 
-    we <= '0' when clk = '0' and (has_spi_write_data = '1' or
-          has_ram_write_data = '1') else '1';
-
-    address <= '0' & ptr when state = xfer_next else
-               "0000010" when state = spi_start else
-               "0000001" when want_read_control = '1' else
-               (others => '0');
-
-    srst <= '1' when done = '1' else '0';
+    srst <= '1' when state = cpu_activate else '0';
 
 end arch_ioc_boot;
