@@ -33,7 +33,6 @@ begin
         data_in_rdy => spi_in_rdy,
         data_out_rdy => spi_out_rdy);
 
-
     process(rst_n, clk)
     begin
         if rst_n = '0' then

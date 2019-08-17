@@ -28,6 +28,9 @@ architecture arch of test_iocboot is
     signal spi_int_n: std_logic_vector(3 downto 0);
     signal spi_we_n: std_logic;
 
+    signal ram_address: std_logic_vector(17 downto 0);
+    signal ram_data: std_logic_vector(7 downto 0);
+
     -- clock speed
     constant clk_period: time := 10 ns;
 begin
@@ -71,6 +74,19 @@ begin
         sclk => sclk,
         miso => miso,
         mosi => mosi);
+
+    RAM: entity work.test_aram
+    port map(
+        address => ram_address,
+        data => ram_data,
+        we_n => boot_we_n,
+        oe_n => boot_oe_n,
+        csel_n => boot_csel_ram_n);
+
+    ram_address(6 downto 0) <= address;
+    ram_address(17 downto 7) <= (others => '0');
+    ram_data <= data;
+
 
     -- MUX
     data <= boot_data_out when boot_csel_ram_n = '1' and boot_csel_spi_n = '1'
