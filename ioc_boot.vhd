@@ -139,7 +139,7 @@ begin
     csel_spi <= '0' when busturn = spi_select or busturn = spi_control_read
                 or busturn = spi_control_write or busturn = spi_data_write
                else '1';
-    we <= '0' when clk = '1' and (busturn = spi_control_write or
+    we <= '0' when clk = '0' and (busturn = spi_control_write or
                                   busturn = spi_data_write or
                                   busturn = copy) else '1';
     oe <= '0' when busturn = spi_control_read else '1';

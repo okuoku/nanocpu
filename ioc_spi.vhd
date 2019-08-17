@@ -75,7 +75,7 @@ begin
         si => miso,
         so => mosi);
 
-    sr_data_in_rdy <= '0' when data_busy = '1' else '1';
+    sr_data_in_rdy <= '0' when toggle_data_bus = toggle_data_sr else '1';
     sr_data_in <= wq;
 
     -- SPI I/F
@@ -113,7 +113,8 @@ begin
         end if;
     end process;
 
-    active <= '1' when sr_ss = '0' else '1';
+    active <= '1' when sr_data_out_rdy = '0' or
+              toggle_data_bus /= toggle_data_sr else '0';
     data_busy <= '0' when toggle_data_bus = toggle_data_sr else '1';
     sr_ss <= '1' when config_ss = "1111" else '0';
     ss <= config_ss;

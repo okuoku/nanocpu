@@ -26,6 +26,7 @@ architecture arch of test_iocboot is
     signal spi_address: std_logic_vector(1 downto 0);
     signal spi_data_out: std_logic_vector(7 downto 0);
     signal spi_int_n: std_logic_vector(3 downto 0);
+    signal spi_we_n: std_logic;
 
     -- clock speed
     constant clk_period: time := 10 ns;
@@ -52,7 +53,7 @@ begin
         data_in => data,
         data_out => spi_data_out,
         address => spi_address,
-        we => boot_we_n,
+        we => spi_we_n,
 
         int => spi_int_n,
 
@@ -76,7 +77,7 @@ begin
             else
             spi_data_out when boot_csel_spi_n = '0' and boot_oe_n = '0' else
             spi_data_out when boot_spi_hold_n = '0' else
-            "ZZZZZZZZ";
+            boot_data_out;
 
     spi_address <= "00" when boot_spi_hold_n = '0' else
                    address(1 downto 0);
@@ -84,6 +85,9 @@ begin
     spi_int_n <= (others => '1');
 
     ss_n <= spi_ss_n(0);
+
+    -- FIXME: Perhaps ioc_spi should have chip enable
+    spi_we_n <= '0' when boot_csel_spi_n = '0' and boot_we_n = '0' else '1';
 
     resetlogic: process
     begin
