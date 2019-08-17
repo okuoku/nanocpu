@@ -17,7 +17,7 @@ architecture arch of ghdl_top is
     constant clk_period: time := 10 ns;
 begin
     -- Components
-    CPU: entity work.nanocpu
+    CPU: entity work.cpu_root
     port map (
         data => data,
         address => address,
