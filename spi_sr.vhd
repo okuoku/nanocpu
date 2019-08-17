@@ -1,8 +1,12 @@
+--
+-- Simple SPI 8-to-1 shift register
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity spi_sr is port (
-    clk: in std_logic;
+    clk: in std_logic; -- core clock
     ss: in std_logic;
     -- SPI
     sclk: out std_logic; -- Gated `clk`
