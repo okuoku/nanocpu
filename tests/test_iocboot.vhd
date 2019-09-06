@@ -30,6 +30,8 @@ architecture arch of test_iocboot is
 
     signal ram_address: std_logic_vector(17 downto 0);
     signal ram_data: std_logic_vector(7 downto 0);
+    signal ram_oe_n: std_logic;
+    signal ram_we_n: std_logic;
 
     -- clock speed
     constant clk_period: time := 10 ns;
@@ -79,13 +81,15 @@ begin
     port map(
         address => ram_address,
         data => ram_data,
-        we_n => boot_we_n,
-        oe_n => boot_oe_n,
+        we_n => ram_we_n,
+        oe_n => ram_oe_n,
         csel_n => boot_csel_ram_n);
 
-    ram_address(6 downto 0) <= address;
+    ram_address(6 downto 0) <= address when boot_csel_ram_n = '0' else (others => 'Z');
     ram_address(17 downto 7) <= (others => '0');
-    ram_data <= data;
+    ram_data <= data when boot_csel_ram_n = '0' else (others => 'Z');
+    ram_oe_n <= boot_oe_n when boot_csel_ram_n = '0' else '1';
+    ram_we_n <= boot_we_n when boot_csel_ram_n = '0' else '1';
 
 
     -- MUX
