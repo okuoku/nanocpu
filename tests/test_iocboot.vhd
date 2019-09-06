@@ -70,7 +70,6 @@ begin
     CTR: entity work.test_spi_ctr
     port map(
         rst_n => rst_n,
-        clk => clk,
 
         ss_n => ss_n,
         sclk => sclk,

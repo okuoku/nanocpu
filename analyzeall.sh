@@ -2,6 +2,7 @@
 cc -shared -O3 -g -o busemu.so busemu/busemu_main.c
 /opt/ghdl/bin/ghdl -a test_aram.vhd
 /opt/ghdl/bin/ghdl -a spi_sr.vhd
+/opt/ghdl/bin/ghdl -a spi_dsr.vhd
 /opt/ghdl/bin/ghdl -a test_spi_ctr.vhd
 /opt/ghdl/bin/ghdl -a ioc_boot.vhd
 /opt/ghdl/bin/ghdl -a ioc_spi.vhd
