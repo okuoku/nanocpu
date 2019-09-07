@@ -1,5 +1,5 @@
 NET "clk" LOC = P43; # GCLK0
-NET "rst" LOC = P30; # GSR
+NET "rst_n" LOC = P30; # GSR
 
 # Data path (FB3)
 NET "data<0>" LOC = P18;
@@ -11,21 +11,21 @@ NET "data<5>" LOC = P23;
 NET "data<6>" LOC = P27;
 NET "data<7>" LOC = P28;
 
-NET "address<0>" LOC = P5;
-NET "address<1>" LOC = P6;
-NET "address<2>" LOC = P8;
-NET "address<3>" LOC = P12;
-NET "address<4>" LOC = P13;
-NET "address<5>" LOC = P14;
-NET "address<6>" LOC = P16;
-NET "address<7>" LOC = P38;
-NET "address<8>" LOC = P37;
-NET "address<9>" LOC = P36;
-NET "address<10>" LOC = P34;
-NET "address<11>" LOC = P33;
-NET "address<12>" LOC = P32;
-NET "address<13>" LOC = P31;
+NET "addr<0>" LOC = P5;
+NET "addr<1>" LOC = P6;
+NET "addr<2>" LOC = P8;
+NET "addr<3>" LOC = P12;
+NET "addr<4>" LOC = P13;
+NET "addr<5>" LOC = P14;
+NET "addr<6>" LOC = P16;
+NET "addr<7>" LOC = P38;
+NET "addr<8>" LOC = P37;
+NET "addr<9>" LOC = P36;
+NET "addr<10>" LOC = P34;
+NET "addr<11>" LOC = P33;
+NET "addr<12>" LOC = P32;
+NET "addr<13>" LOC = P31;
 
-NET "oe" LOC = P39;
-NET "we" LOC = P40;
+NET "oe_n" LOC = P39;
+NET "we_n" LOC = P40;
 
