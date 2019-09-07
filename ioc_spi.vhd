@@ -2,16 +2,17 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity ioc_spi is port (
-    rst: in std_logic;
-    clk: in std_logic;
-    -- SRAM I/F
+    rst_n: in std_logic;
+    clk_spi: in std_logic;
+    -- Bus I/F
+    pclk: in std_logic;
+    wr: in std_logic;
     data_in: in std_logic_vector(7 downto 0);
-    data_out: out std_logic_vector(7 downto 0);
-    we: in std_logic;
-    address: in std_logic_vector(1 downto 0);
+    data_out: out std_logic_vector(7 downto 0); -- (always output receive q)
+    addr: in std_logic_vector(1 downto 0);
     -- SPI
-    ss: out std_logic_vector(3 downto 0);
-    int: in std_logic_vector(3 downto 0);
+    ss_n: out std_logic_vector(3 downto 0);
+    int_n: in std_logic_vector(3 downto 0);
     sclk: out std_logic;
     miso: in std_logic;
     mosi: out std_logic);
@@ -61,7 +62,7 @@ architecture arch_ioc_spi of ioc_spi is
 begin
     SR: entity work.spi_sr
     port map(
-        clk => clk,
+        clk => clk_spi,
         ss => sr_ss,
         -- Data
         data_in => sr_data_in,
@@ -79,13 +80,13 @@ begin
     sr_data_in <= wq;
 
     -- SPI I/F
-    process(rst, clk)
+    process(rst_n, clk_spi)
     begin
-        if rst = '0' then
+        if rst_n = '0' then
             toggle_data_sr <= '0';
             toggle_config_sr <= '0';
             config_ss <= "1111";
-        elsif rising_edge(clk) then
+        elsif rising_edge(clk_spi) then
             -- config > data priority to ensure 1clk for select pulse
             if toggle_config_bus /= toggle_config_sr then
                 if config_enable = '0' then
@@ -117,23 +118,23 @@ begin
               toggle_data_bus /= toggle_data_sr else '0';
     data_busy <= '0' when toggle_data_bus = toggle_data_sr else '1';
     sr_ss <= '1' when config_ss = "1111" else '0';
-    ss <= config_ss;
+    ss_n <= config_ss;
 
-    -- SRAM Register I/F
-    process(rst, we)
+    -- Bus Register I/F
+    process(rst_n, pclk)
     begin
-        if rst = '0' then
+        if rst_n = '0' then
             toggle_data_bus <= '0';
             toggle_config_bus <= '0';
-        elsif falling_edge(we) then
-            if address = "00" then
+        elsif rising_edge(pclk) and wr = '1' then
+            if addr = "00" then
                 if toggle_data_bus = '1' then
                     toggle_data_bus <= '0';
                 else
                     toggle_data_bus <= '1';
                 end if;
                 wq <= data_in;
-            elsif address = "01" then
+            elsif addr = "01" then
                 if toggle_config_bus = '1' then
                     toggle_config_bus <= '0';
                 else
@@ -145,7 +146,7 @@ begin
         end if;
     end process;
 
-    data_out <= int & "00" & data_busy & active when address = "01"
+    data_out <= int_n & "00" & data_busy & active when addr = "01"
                 else rq;
 
 end arch_ioc_spi;

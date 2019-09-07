@@ -3,19 +3,19 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity ioc_boot is port (
-    rst: in std_logic;
+    rst_n: in std_logic;
     clk: in std_logic;
-    -- SRAM I/F
+    -- Bus I/F (host)
     data_in: in std_logic_vector(7 downto 0);
     data_out: out std_logic_vector(7 downto 0);
-    address: out std_logic_vector(6 downto 0);
-    we: out std_logic;
-    oe: out std_logic;
+    addr: out std_logic_vector(6 downto 0);
+    wr: out std_logic;
+    en: out std_logic;
     csel_ram: out std_logic;
     csel_spi: out std_logic;
     spi_hold: out std_logic;
     -- CPU I/F
-    srst: out std_logic);
+    srst_n: out std_logic);
 end;
 
 architecture arch_ioc_boot of ioc_boot is
@@ -41,9 +41,9 @@ architecture arch_ioc_boot of ioc_boot is
     attribute fsm_encoding of state: signal is "compact";
     signal ptr: std_logic_vector(6 downto 0);
 begin
-    process (rst, clk)
+    process (rst_n, clk)
     begin 
-        if(rst = '0') then
+        if(rst_n = '0') then
             ptr <= "0000000";
             state <= spi_on;
             busturn <= silent;
@@ -127,23 +127,23 @@ begin
         end if;
     end process;
 
-    address <= "0000000" when busturn = spi_data_write else
-               "0000001" when busturn = spi_control_read or 
-                              busturn = spi_control_write else
-               ptr       when busturn = copy else
-               "0000000";
+    addr <= "0000000" when busturn = spi_data_write else
+            "0000001" when busturn = spi_control_read or 
+                           busturn = spi_control_write else
+            ptr       when busturn = copy else
+            "0000000";
 
 
-    spi_hold <= '0' when busturn = copy else '1';
-    csel_ram <= '0' when busturn = copy or busturn = ram_select else '1';
-    csel_spi <= '0' when busturn = spi_select or busturn = spi_control_read
-                or busturn = spi_control_write or busturn = spi_data_write
-               else '1';
-    we <= '0' when clk = '0' and (busturn = spi_control_write or
-                                  busturn = spi_data_write or
-                                  busturn = copy) else '1';
-    oe <= '0' when busturn = spi_control_read else '1';
+    spi_hold <= '1' when busturn = copy else '0';
+    csel_ram <= '1' when busturn = copy or busturn = ram_select else '0';
+    csel_spi <= '1' when busturn = spi_select or busturn = spi_control_read
+                  or busturn = spi_control_write or busturn = spi_data_write
+                  else '0';
+    wr <= '1' when busturn = spi_control_write or
+                   busturn = spi_data_write or
+                   busturn = copy else '0';
+    en <= '1' when busturn = spi_control_read else '0';
 
-    srst <= '1' when state = cpu_activate else '0';
+    srst_n <= '1' when state = cpu_activate else '0';
 
 end arch_ioc_boot;
