@@ -17,19 +17,16 @@ end;
 
 architecture rtl of top is
     signal rst_n: std_logic;
-    -- Glue
-    signal wr: std_logic;
-    signal en: std_logic;
+    -- SRAM I/F
     signal oe_n: std_logic;
     signal we_n: std_logic;
-    signal csel: std_logic_vector(2 downto 0);
-    -- SRAM I/F
     signal sram_ce_n: std_logic;
     signal aux0_ce_n: std_logic;
     signal aux1_ce_n: std_logic;
     signal addr: std_logic_vector(19 downto 0);
     signal data_in: std_logic_vector(7 downto 0);
     signal data_out: std_logic_vector(7 downto 0);
+    signal data_en: std_logic;
     -- SPI
     signal spi_ss_n: std_Logic_vector(3 downto 0);
     signal spi_int_n: std_logic_vector(3 downto 0);
@@ -42,13 +39,10 @@ begin
     -- Board
     rst_n <= '0' when BTN(0) = '1' else '1';
     
-    GIO(8 downto 1) <= data_out when wr = '1' else (others => 'Z');
+    GIO(8 downto 1) <= data_out when data_en = '1' else (others => 'Z');
     data_in <= GIO(8 downto 1);
 
     GIO(28 downto 9) <= addr;
-    sram_ce_n <= '0' when csel(0) = '1' else '1';
-    aux0_ce_n <= '0' when csel(1) = '1' else '1';
-    aux1_ce_n <= '0' when csel(2) = '1' else '1';
     GIO(33) <= sram_ce_n;
     GIO(34) <= aux0_ce_n;
     GIO(35) <= aux1_ce_n;
@@ -114,31 +108,27 @@ begin
     CAT <= (others => '0');
     ANO <= (others => '0');
 
-    CHIP: entity work.chip_single
+    CHIPTOP: entity work.chip_asram
     port map(
         clk => clk,
         clk_spi => clk,
         rst_n => rst_n,
-        
-        wr => wr,
-        en => en,
+        oe_n => oe_n,
+        we_n => we_n,
+
+        sram_ce_n => sram_ce_n,
+        aux0_ce_n => aux0_ce_n,
+        aux1_ce_n => aux1_ce_n,
+
         data_in => data_in,
         data_out => data_out,
+        data_en => data_en,
         addr => addr,
-        csel => csel,
 
-        ss_n => spi_ss_n,
-        int_n => spi_int_n,
+        spi_ss_n => spi_ss_n,
+        spi_int_n => spi_int_n,
         sclk => sclk,
         miso => miso,
         mosi => mosi);
 
-    GLUE: entity work.glue_async
-    port map(
-        clk => clk,
-        rst_n => rst_n,
-        en => en,
-        wr => wr,
-        oe_n => oe_n,
-        we_n => we_n);
 end rtl;
