@@ -71,8 +71,11 @@ begin
     en <= internal_en when internal_csel_spi = '0' else '0';
 
     -- MUX: csel
-    internal_csel_spi <= mbc_csel(3);
-    csel <= "001" when cpu_rst_n = '0' else mbc_csel(2 downto 0);
+    internal_csel_spi <= boot_csel_spi when cpu_rst_n = '0' else
+                         mbc_csel(3);
+    csel <= "001" when cpu_rst_n = '0' and boot_csel_ram = '1' else
+            "000" when cpu_rst_n = '0' and boot_csel_ram = '0' else 
+            mbc_csel(2 downto 0);
 
     -- MUX: data_in
     spi_data_in <= boot_data_out when cpu_rst_n = '0' else
@@ -87,7 +90,8 @@ begin
     addr <= "0000000000000" & boot_addr when cpu_rst_n = '0' else
             mbc_bank & cpu_addr;
     mbc_addr <= cpu_addr(2 downto 0);
-    spi_addr <= boot_addr(1 downto 0) when cpu_rst_n = '0' else
+    spi_addr <= boot_addr(1 downto 0) when cpu_rst_n = '0' and boot_spi_hold = '0' else
+                "00" when cpu_rst_n = '0' and boot_spi_hold = '1' else
                 cpu_addr(1 downto 0);
 
     -- MAP: cpu => mbc (direct connection)
