@@ -1,0 +1,115 @@
+# Digilent Coolrunner II starter Board UCF
+
+NET  "clk"   LOC = "P38"; #PCLK (8MHz)
+#NET "clk" LOC = "P32"; # Osc socket
+
+# GIO Bank1
+# GIO FB 15 Bank1
+NET "GIO<1>" LOC = "P92"; # GIO
+NET "GIO<2>" LOC = "P91"; # GIO
+NET "GIO<3>" LOC = "P88"; # GIO
+NET "GIO<4>" LOC = "P87"; # GIO
+NET "GIO<5>" LOC = "P86"; # GIO
+NET "GIO<6>" LOC = "P85"; # GIO
+NET "GIO<7>" LOC = "P83"; # GIO
+# GIO FB 13 Bank1
+NET "GIO<8>" LOC = "P82"; # GIO
+NET "GIO<9>" LOC = "P81"; # GIO
+NET "GIO<10>" LOC = "P80"; # GIO
+NET "GIO<11>" LOC = "P79"; # GIO
+NET "GIO<12>" LOC = "P78"; # GIO
+NET "GIO<13>" LOC = "P77"; # GIO
+NET "GIO<14>" LOC = "P76"; # GIO
+NET "GIO<15>" LOC = "P75"; # GIO
+# GIO FB 14 Bank1
+NET "GIO<16>" LOC = "P74"; # GIO
+NET "GIO<17>" LOC = "P71"; # GIO
+NET "GIO<18>" LOC = "P70"; # GIO
+# GIO FB 8 Bank1
+NET "GIO<19>" LOC = "P52"; # GIO
+NET "GIO<20>" LOC = "P51"; # GIO
+NET "GIO<21>" LOC = "P50"; # GIO
+NET "GIO<22>" LOC = "P49"; # GIO
+NET "GIO<23>" LOC = "P48"; # GIO
+NET "GIO<24>" LOC = "P46"; # GIO
+NET "GIO<25>" LOC = "P45"; # GIO
+NET "GIO<26>" LOC = "P44"; # GIO
+# GIO FB 4 Bank2
+NET "GIO<27>" LOC = "P13"; # GIO
+NET "GIO<28>" LOC = "P14"; # GIO
+NET "GIO<29>" LOC = "P15"; # GIO
+NET "GIO<30>" LOC = "P16"; # GIO
+NET "GIO<31>" LOC = "P17"; # GIO
+NET "GIO<32>" LOC = "P18"; # GIO
+# GIO FB 10 Bank2
+NET "GIO<33>" LOC = "P105"; # GIO
+NET "GIO<34>" LOC = "P106"; # GIO
+NET "GIO<35>" LOC = "P107"; # GIO
+NET "GIO<36>" LOC = "P110"; # GIO
+NET "GIO<37>" LOC = "P111"; # GIO
+
+# Digilent Pmod
+NET "JA<0>" LOC = "P10"; # IO 1
+NET "JA<1>" LOC = "P7";  # IO 2
+NET "JA<2>" LOC = "P5";  # IO 3
+NET "JA<3>" LOC = "P3";  # IO 4
+NET "JA<4>" LOC = "P9";  # IO 7
+NET "JA<5>" LOC = "P6";  # IO 8
+NET "JA<6>" LOC = "P4";  # IO 9
+NET "JA<7>" LOC = "P2";  # IO 10
+
+NET "JB<0>" LOC = "P142"; # IO 1
+NET "JB<1>" LOC = "P139"; # IO 2
+NET "JB<2>" LOC = "P136"; # IO 3
+NET "JB<3>" LOC = "P134"; # IO 4
+NET "JB<4>" LOC = "P140"; # IO 7
+NET "JB<5>" LOC = "P138"; # IO 8
+NET "JB<6>" LOC = "P135"; # IO 9
+NET "JB<7>" LOC = "P133"; # IO 10
+
+NET "JC<0>" LOC = "P119"; # IO 1
+NET "JC<1>" LOC = "P117"; # IO 2
+NET "JC<2>" LOC = "P115"; # IO 3
+NET "JC<3>" LOC = "P113"; # IO 4
+NET "JC<4>" LOC = "P118"; # IO 7
+NET "JC<5>" LOC = "P116"; # IO 8
+NET "JC<6>" LOC = "P114"; # IO 9
+NET "JC<7>" LOC = "P112"; # IO 10
+
+NET "JD<0>" LOC = "P104"; # IO 1
+NET "JD<1>" LOC = "P102"; # IO 2
+NET "JD<2>" LOC = "P100"; # IO 3
+NET "JD<3>" LOC = "P97";  # IO 4
+NET "JD<4>" LOC = "P103"; # IO 7
+NET "JD<5>" LOC = "P101"; # IO 8
+NET "JD<6>" LOC = "P98";  # IO 9
+NET "JD<7>" LOC = "P96";  # IO 10
+
+# Input(Button)
+NET "BTN<0>" LOC = "P143"; #BTN0
+NET "BTN<1>" LOC = "P94"; #BTN1
+
+# Input(Switch)
+NET "SW<0>" LOC = "P39"; #SW0
+NET "SW<1>" LOC = "P124"; #SW1
+
+# Output (LED)
+NET "LD<0>" LOC = "P69"; #LD0
+NET "LD<1>" LOC = "P68"; #LD1
+NET "LD<2>" LOC = "P66"; #LD2
+NET "LD<3>" LOC = "P64"; #LD3
+
+# Output (7-seg LED)
+NET "CAT<0>" LOC = "P56";
+NET "CAT<1>" LOC = "P53";
+NET "CAT<2>" LOC = "P60";
+NET "CAT<3>" LOC = "P58";
+NET "CAT<4>" LOC = "P57";
+NET "CAT<5>" LOC = "P54";
+NET "CAT<6>" LOC = "P61";
+NET "CAT<7>" LOC = "P59";
+
+NET "ANO<3>" LOC = "P130";
+NET "ANO<2>" LOC = "P129";
+NET "ANO<1>" LOC = "P128";
+NET "ANO<0>" LOC = "P126";
