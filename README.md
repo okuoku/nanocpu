@@ -3,6 +3,9 @@ nanocpu
 
 Article(Japanese): https://qiita.com/okuoku/items/3dd2da20f46c2e63286f
 
+CPU
+---
+
 nanocpu is a minimal 8Bit CPU that fits in 64 macrocell Coolrunner II CPLD.
 It is based on MCPU ( https://github.com/cpldcpu/MCPU/ ) but extended with:
 
@@ -12,7 +15,7 @@ It is based on MCPU ( https://github.com/cpldcpu/MCPU/ ) but extended with:
  - fixed "reset handler" page for program and data
  - 4 additional opcodes to control these extensions
    - `LCP` - Load Code Page - Load ACC to code page register
-   - `LDP` - Load Data page register - Load ACC to data page register
+   - `LDP` - Load Data Page - Load ACC to data page register
    - `SWS` - SWitch to Scratchpad - Switch data access to scratchpad area
    - `SWD` - SWitch to Data - Switch data access to data area
 
@@ -20,8 +23,25 @@ Original MCPU opcodes ( `ADD` , `NOR` , `STA` and `JCC` ) are retained but
 `JCC(60)` to `JCC(63)` are used to provide 4 additional opcodes so
 code flow is restricted a bit.
 
-CPU
-===
+Most instruction will take 4 cycles to complete(Code-Address, Code-Read, Data-Address, Data-Write).
+
+Companion IPs
+-------------
+
+NOTE: Companion IPs are not FPGA/CPLD proven yet.
+
+TODO: Companion IP documents
+
+This repository also contains companion IPs to make (in)complete computer system.
+
+- `spi` - SPI Mode0 host with Async SRAM interface, 4 chip-select and input pins
+- `boot` - Copy SPI flash content into Async SRAM to bootstrap the processor
+- `mbc` - Memory Bank Controller with 4 chip-select, provides 20 bits address space in total
+
+These IPs also fits in a 64 macrocell Coolrunner II CPLD. In addition, these can be merged in a single chip with a 256 macrocell Coolrunner II or a 256 macrocell ispMACH 4000.
+
+CPU Reference
+=============
 
 Registers
 ---------
@@ -61,8 +81,10 @@ Thus, `JCC` cannot jump to address `60` to `63`.
 |JCC(62)|LDP|Load to Data Page|ACC => DP|
 |JCC(63)|LCP|Load to Code Page|ACC => CP|
 
-Special segments
-----------------
+Special pages
+-------------
+
+Some pages are reserved by ISA for the special purposes.
 
 |name|type|location|content|
 |:---|:---|:-------|:------|
