@@ -4,6 +4,7 @@ project(nanocpu NONE)
 set(WITH_GHDL c:/prog/ghdl/0.36-mingw64-llvm/bin/ghdl)
 
 set(srcs_base # ordered
+    mem_ram8k.vhd
     test_aram.vhd
     spi_sr.vhd
     spi_dsr.vhd
