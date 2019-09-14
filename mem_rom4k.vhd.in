@@ -1,0 +1,23 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity mem_rom4k_@ROMIDENT@ is
+    port (clk: in std_logic;
+          addr: in std_logic_vector(11 downto 0);
+          data: out std_logic_vector(7 downto 0));
+end entity;
+
+architecture arch_mem_rom4k_@ROMIDENT@ of mem_rom4k_@ROMIDENT@ is
+begin
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            case addr is
+                -- WHEN "00000000000" => data <= "00000000";
+                @ROMCONTENTS@
+                when others => data <= (others => '0');
+            end case;
+        end if;
+    end process;
+end archi_mem_rom4k_@ROMIDENT@;
