@@ -39,17 +39,20 @@ begin
             phase <= code;
             acc <= (others => '0');
             pc <= (others => '0');
-            pag_dat <= "10000000";
-            pag_prg <= "10000000";
+            buf_addr <= (others => '0');
+            pag_dat <= "11000000";
+            pag_prg <= "11000000";
             use_scratch <= '0';
         elsif rising_edge(clk) then
             if busturn = command_read then -- finish read request
                 busturn <= action;
             elsif busturn = command_write then -- run next
                 phase <= code;
+                buf_addr <= pc;
                 busturn <= command_read;
             elsif busturn = command_null then
                 phase <= code;
+                buf_addr <= pc;
                 busturn <= command_read;
             else -- action
                 if phase = code then -- code phase
