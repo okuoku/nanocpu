@@ -10,12 +10,13 @@ nanocpu is a minimal 8Bit CPU that fits in 64 macrocell Coolrunner II CPLD.
 It is based on MCPU ( https://github.com/cpldcpu/MCPU/ ) but extended with:
 
  - 14 bits address bus
- - 8 bits page registers for program and data
- - fixed "scratchpad" page for data
- - fixed "reset handler" page for program and data
+ - 8 bits slice registers for program and data
+ - 6 bits addressed "slice" as basic program/data unit
+ - fixed "scratchpad" slice for data
+ - fixed "reset handler" slice for program and data
  - 4 additional opcodes to control these extensions
-   - `LCP` - Load Code Page - Load ACC to code page register
-   - `LDP` - Load Data Page - Load ACC to data page register
+   - `LPS` - Load Program Slice - Load ACC to program slice register
+   - `LDS` - Load Data Slice - Load ACC to data slice register
    - `SWS` - SWitch to Scratchpad - Switch data access to scratchpad area
    - `SWD` - SWitch to Data - Switch data access to data area
 
@@ -50,8 +51,8 @@ Registers
 |:-------|:---:|:---|
 |ACC|8 bit|ACCumulator|
 |PC|6 bit|Program Counter|
-|CP|8 bit|Code Page|
-|DP|8 bit|Data Page|
+|PS|8 bit|Program Slice|
+|DS|8 bit|Data Slice|
 |C|1 bit|Carry flag|
 
 Instructions
@@ -59,7 +60,7 @@ Instructions
 
 Standard OPs: `NOR` `ADD` `STA` `JCC`
 
-Extended OPs: `SWD` `SWS` `LCP` `LDP`
+Extended OPs: `SWD` `SWS` `LDS` `LPS`
 
 Standard OPs(memory instructions) will take 6bit operand.
 Every memory operand will be concatinated with `DP` or scratchpad location.
@@ -78,13 +79,13 @@ Thus, `JCC` cannot jump to address `60` to `63`.
 |:---|:---:|:---|:---|
 |JCC(60)|SWD|SWitch to Data space|Use Data Segment for data access|
 |JCC(61)|SWS|SWitch to Scratch space|Use Scratchpad Segment for data access|
-|JCC(62)|LDP|Load to Data Page|ACC => DP|
-|JCC(63)|LCP|Load to Code Page|ACC => CP|
+|JCC(62)|LDS|Load to Data Slice|ACC => DS|
+|JCC(63)|LPS|Load to Program Slice|ACC => PS|
 
-Special pages
--------------
+Special slices
+--------------
 
-Some pages are reserved by ISA for the special purposes.
+Some slices are reserved by ISA for the special purposes.
 
 |name|type|location|content|
 |:---|:---|:-------|:------|

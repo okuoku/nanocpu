@@ -25,8 +25,8 @@ architecture arch_nanocpu of nanocpu is
     signal busturn: type_busturn; -- 2 bits
     signal acc: std_logic_vector(8 downto 0); -- 9 bits
     signal pc: std_logic_vector(5 downto 0); -- 6 bits
-    signal pag_dat: std_logic_vector(7 downto 0); -- 8: Data page register
-    signal pag_prg: std_logic_vector(7 downto 0); -- 8: Program page register
+    signal pag_dat: std_logic_vector(7 downto 0); -- 8: Data Slice register
+    signal pag_prg: std_logic_vector(7 downto 0); -- 8: Program Slice register
     signal use_scratch: std_logic; -- 1 bit
     
     signal buf_addr: std_logic_vector(5 downto 0); -- 6: Address buffer
@@ -65,7 +65,7 @@ begin
                         elsif data_in(5 downto 0) = "111110" then -- LDS
                             pc <= std_logic_vector(unsigned(buf_addr) + 1);
                             pag_dat <= acc(7 downto 0);
-                        elsif data_in(5 downto 0) = "111111" then -- LDP
+                        elsif data_in(5 downto 0) = "111111" then -- LPS
                             pag_prg <= acc(7 downto 0);
                             pc <= (others => '0');
                         else -- JCC
