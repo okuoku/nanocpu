@@ -1,0 +1,80 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity test_chip_plain_@ROMIDENT@ is
+    port(clk: in std_logic;
+         rst_n: in std_logic;
+         success: out std_logic;
+         fail: out std_logic);
+end;
+
+architecture arch_test_chip_plain_@ROMIDENT@ of test_chip_plain_@ROMIDENT@ is
+    signal cpu_addr: std_logic_vector(13 downto 0);
+    signal cpu_data_in: std_logic_vector(7 downto 0);
+    signal cpu_data_out: std_logic_vector(7 downto 0);
+    signal cpu_wr: std_logic;
+
+    signal ram_addr: std_logic_vector(12 downto 0);
+    signal ram_data_out: std_logic_vector(7 downto 0);
+    signal ram_wr: std_logic;
+
+    signal rom_addr: std_logic_vector(11 downto 0);
+    signal rom_data_out: std_logic_vector(7 downto 0);
+
+    signal da_addr: std_logic_vector(11 downto 0);
+    signal da_wr: std_logic;
+
+    signal csel: std_logic_vector(1 downto 0);
+begin
+
+
+    -- MUX
+    csel <= cpu_addr(13 downto 12);
+
+    cpu_data_in <= ram_data_out when csel = "00" else
+                   ram_data_out when csel = "01" else
+                   rom_data_out when csel = "11" else
+                   (others => 'X');
+
+    ram_addr <= cpu_addr(12 downto 0);
+    rom_addr <= cpu_addr(11 downto 0);
+    da_addr <= cpu_addr(11 downto 0);
+    
+    DA: entity work.test_da
+    port map(
+        clk => clk,
+        rst_n => rst_n,
+        success => success,
+        fail => fail,
+
+        addr => da_addr,
+        data_in => cpu_data_out,
+        wr => da_wr);
+
+    CPU: entity work.nanocpu
+    port map(
+        rst_n => rst_n,
+        clk => clk,
+
+        addr => cpu_addr,
+        data_in => cpu_data_in,
+        data_out => cpu_data_out,
+        wr => cpu_wr);
+
+    RAM: entity work.mem_ram8k
+    port map(
+        clk => clk,
+
+        addr => ram_addr,
+        data_in => cpu_data_out,
+        data_out => ram_data_out,
+        wr => ram_wr);
+
+    ROM: entity work.mem_rom4k_@ROMIDENT@
+    port map(
+        clk => clk,
+
+        addr => rom_addr,
+        data => rom_data_out);
+
+end arch_test_chip_plain_@ROMIDENT@;

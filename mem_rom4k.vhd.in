@@ -1,6 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity mem_rom4k_@ROMIDENT@ is
     port (clk: in std_logic;
@@ -20,4 +19,4 @@ begin
             end case;
         end if;
     end process;
-end archi_mem_rom4k_@ROMIDENT@;
+end arch_mem_rom4k_@ROMIDENT@;

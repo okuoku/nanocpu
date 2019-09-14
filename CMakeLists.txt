@@ -3,6 +3,56 @@ project(nanocpu NONE)
 
 set(WITH_GHDL c:/prog/ghdl/0.36-mingw64-llvm/bin/ghdl)
 
+include(./cmake/nanoasm.cmake)
+include(./tests/sw/basic0.cmake)
+
+asm_pass1(globals basic0_globals)
+asm_pass1(basic0_slice0 basic0_slice0)
+asm_pass1(basic0_slice1 basic0_slice1)
+
+asm_pass2(out_basic0_slice0 basic0_slice0 basic0_slice0)
+asm_pass2(out_basic0_slice1 basic0_slice1 basic0_slice1)
+
+function(genrom id)
+    set(vars ${ARGN})
+    set(cur 0)
+    set(len)
+    set(acc)
+    foreach(v ${vars})
+        foreach(b ${${v}})
+            set(rom_${cur} ${b})
+            math(EXPR cur "${cur}+1")
+        endforeach()
+    endforeach()
+    set(len ${cur})
+    set(cur 0)
+    while(NOT cur EQUAL ${len})
+        to_binary(data ${rom_${cur}})
+        to_binary12(addr ${cur})
+        set(acc "${acc}\n                when \"${addr}\" => data <= \"${data}\";")
+        math(EXPR cur "${cur}+1")
+    endwhile()
+    set(ROMCONTENTS "${acc}")
+    set(ROMIDENT ${id})
+    configure_file(mem_rom4k.vhd.in 
+        ${CMAKE_CURRENT_LIST_DIR}/gen/mem_rom4k_${id}.vhd @ONLY
+        NEWLINE_STYLE LF)
+endfunction()
+
+function(gentest_plain id)
+    set(ROMIDENT ${id})
+    configure_file(test_chip_plain.vhd.in
+        ${CMAKE_CURRENT_LIST_DIR}/gen/test_chip_plain_${id}.vhd @ONLY)
+endfunction()
+
+genrom(basic0 out_basic0_slice0 out_basic0_slice1)
+gentest_plain(basic0)
+
+set(srcs_gen_roms
+    gen/mem_rom4k_basic0.vhd)
+set(srcs_gen_tests
+    gen/test_chip_plain_basic0.vhd)
+
 set(srcs_base # ordered
     mem_ram8k.vhd
     test_aram.vhd
@@ -16,9 +66,8 @@ set(srcs_base # ordered
     glue_async.vhd
     chip_single.vhd
     chip_asram.vhd
+    test_da.vhd
     )
-
-set(srcs_gen)
 
 set(srcs_tests
     tests/test_chip.vhd
@@ -52,7 +101,9 @@ function(ghdl_analyze_all)
 endfunction()
 
 ghdl_analyze_all(
+    ${srcs_gen_roms}
     ${srcs_base}
-    ${srcs_tests})
+    ${srcs_tests}
+    ${srcs_gen_tests})
 
 
