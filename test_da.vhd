@@ -25,8 +25,8 @@ begin
             reg_fail <= '0';
         elsif rising_edge(clk) and wr = '1' then
             case addr is
-                when "000000000010" => reg_success <= '1';
-                when "000000000011" => reg_fail <= '1';
+                when "000000000010" => reg_fail <= '1';
+                when "000000000011" => reg_success <= '1';
                 when others => reg_fail <= '1';
             end case;
         end if;

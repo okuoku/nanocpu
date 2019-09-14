@@ -86,8 +86,9 @@ Success01:
     NOR zAllOne
     ADD z128 # 2:xxx Debug Adapter
     LDS
-    SWS
+    SWD
     STA 3 # 2:003 Success
+    SWS
 
     JCC Fail04
     JCC Fail04

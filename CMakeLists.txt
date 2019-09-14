@@ -70,7 +70,7 @@ set(srcs_base # ordered
     )
 
 set(srcs_tests
-    tests/test_chip.vhd
+    tests/ghdl_basic0.vhd
     )
 
 function(ghdl_analyze_all)
@@ -100,10 +100,21 @@ function(ghdl_analyze_all)
         DEPENDS ${last_depend})
 endfunction()
 
+function(add_ghdl_run id)
+    set(ghdl ${WITH_GHDL})
+    add_custom_target(run-${id}
+        COMMAND ${ghdl} -e ghdl_${id}
+        COMMAND ${ghdl} -r -v ghdl_${id}
+        --stop-time=20000ns
+        --fst=fst.out
+        DEPENDS ghdl_analyze_all)
+endfunction()
+
 ghdl_analyze_all(
     ${srcs_gen_roms}
     ${srcs_base}
-    ${srcs_tests}
-    ${srcs_gen_tests})
+    ${srcs_gen_tests}
+    ${srcs_tests})
 
+add_ghdl_run(basic0)
 

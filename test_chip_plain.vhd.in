@@ -36,6 +36,13 @@ begin
                    rom_data_out when csel = "11" else
                    (others => 'X');
 
+    ram_wr <= '1' when cpu_wr = '1' and csel = "00" else
+              '1' when cpu_wr = '1' and csel = "01" else
+              '0';
+
+    da_wr <= '1' when cpu_wr = '1' and csel = "10" else
+             '0';
+
     ram_addr <= cpu_addr(12 downto 0);
     rom_addr <= cpu_addr(11 downto 0);
     da_addr <= cpu_addr(11 downto 0);
