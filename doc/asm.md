@@ -5,21 +5,24 @@ Instructions
 Core instruction
 ----------------
 
-- NOR
-- ADD
-- STA
-- JCC
+- NOR (0 + ADDR)
+- ADD (64 + ADDR)
+- STA (128 + ADDR)
+- JCC (192 + ADDR)
 
 Special instruction
 -------------------
 
-- SWD
-- SWS
-- LDP
-- LCP
+- SWD (252)
+- SWS (253)
+- LDP (254)
+- LCP (255)
 
-Base constants
---------------
+Constants
+=========
+
+Base constant locations
+-----------------------
 
 ```
 CONSTANT VALUE ADDRESS
@@ -39,6 +42,7 @@ Assembler directives
 --------------------
 
 ```
+___
 _ORG <VAL>
 _PAGE
 ```
