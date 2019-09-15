@@ -25,9 +25,9 @@ begin
     process(rst_n, pclk)
     begin
         if (rst_n = '0') then
-            bank1 <= "10000000";
-            bank2 <= "01000000"; -- nRST makes bank2 as ROM
-            bank3 <= (others => '0');
+            bank1 <= (others => '0'); -- RAM
+            bank2 <= "11000000"; -- SPI(3)
+            bank3 <= (others => '0'); -- RAM
         elsif rising_edge(pclk) and wr_in = '1' then
             if rgn = "11" then
                 if (addr = "000") then

@@ -51,8 +51,6 @@ _IMM <VAL>
 Combinations
 ============
 
-`SKIPCC` is a pseudo instr. to skip next instruction if carry clear.
-
 Arithmetic
 ----------
 
