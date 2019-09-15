@@ -17,11 +17,9 @@ end;
 
 architecture arch_nanocpu of nanocpu is
     type type_phase is (code, data);
-    type type_busturn is (command_read, command_write, command_null, action);
-
+    type type_busturn is (c_read, c_write, c_null, action);
     signal datpag: std_logic_vector(7 downto 0);
     signal next_pc: std_logic_vector(5 downto 0);
-
     signal add9_a: std_logic_vector(7 downto 0);
     signal add9_b: std_logic_vector(7 downto 0);
     signal add9_result: std_logic_vector(8 downto 0);
@@ -36,15 +34,13 @@ architecture arch_nanocpu of nanocpu is
     signal pag_dat: std_logic_vector(7 downto 0); -- 8: Data Slice register
     signal pag_prg: std_logic_vector(7 downto 0); -- 8: Program Slice register
     signal use_scratch: std_logic; -- 1 bit
-    
     signal buf_addr: std_logic_vector(5 downto 0); -- 6: Address buffer
     signal op: std_logic_vector(1 downto 0); -- 2: current opcode
-
 begin
     process(clk, rst_n)
     begin
         if (rst_n = '0') then
-            busturn <= command_read;
+            busturn <= c_read;
             phase <= code;
             acc <= (others => '0');
             pc <= (others => '0');
@@ -85,31 +81,31 @@ begin
             end if;
 
             -- Control, address buffer
-            if busturn = command_read then -- finish read request
+            if busturn = c_read then -- finish read request
                 busturn <= action;
-            elsif busturn = command_write then -- run next
-                busturn <= command_read;
+            elsif busturn = c_write then -- run next
+                busturn <= c_read;
                 phase <= code;
                 buf_addr <= pc;
-            elsif busturn = command_null then -- branch
-                busturn <= command_read;
+            elsif busturn = c_null then -- branch
+                busturn <= c_read;
                 buf_addr <= pc;
             else -- action
                 if phase = code then -- code phase
                     op <= data_in(7 downto 6);
                     if data_in(7 downto 6) = "11" then -- Jump/Special
-                        busturn <= command_null;
+                        busturn <= c_null;
                     elsif data_in(7 downto 6) = "10" then -- STA
-                        busturn <= command_write;
+                        busturn <= c_write;
                         buf_addr <= data_in(5 downto 0);
                         phase <= data;
                     else -- ADD/NOR
-                        busturn <= command_read;
+                        busturn <= c_read;
                         buf_addr <= data_in(5 downto 0);
                         phase <= data;
                     end if;
                 else -- data phase
-                    busturn <= command_read;
+                    busturn <= c_read;
                     phase <= code;
                     buf_addr <= pc;
                 end if;
@@ -125,8 +121,8 @@ begin
 
     -- Address output
     data_out <= acc(7 downto 0);
-    en <= '1' when busturn /= command_write else '0';
-    wr <= '1' when busturn = command_write else '0';
+    en <= '1' when busturn /= c_write else '0';
+    wr <= '1' when busturn = c_write else '0';
     datpag <= (others => '0') when use_scratch = '1' else pag_dat;
     addr <= pag_prg & buf_addr when phase = code else datpag & buf_addr;
 end arch_nanocpu;
