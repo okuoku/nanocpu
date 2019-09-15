@@ -94,7 +94,7 @@ begin
                 if phase = code then -- code phase
                     op <= data_in(7 downto 6);
                     if data_in(7 downto 6) = "11" then -- Jump/Special
-                        busturn <= c_null;
+                        busturn <= c_null; -- Wait pc update
                     elsif data_in(7 downto 6) = "10" then -- STA
                         busturn <= c_write;
                         buf_addr <= data_in(5 downto 0);
@@ -113,13 +113,13 @@ begin
         end if;
     end process;
 
-    -- Addr
+    -- Adder
     add9_a <= "00000001" when phase = code else data_in;
     add9_b <= "00" & pc when phase = code else acc(7 downto 0);
     add9_result <= std_logic_vector(unsigned("0" & add9_a) + unsigned("0" & add9_b));
     next_pc <= add9_result(5 downto 0);
 
-    -- Address output
+    -- Control signals
     data_out <= acc(7 downto 0);
     en <= '1' when busturn /= c_write else '0';
     wr <= '1' when busturn = c_write else '0';
