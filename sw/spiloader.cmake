@@ -1,3 +1,7 @@
+# FIXME: As ioc_boot does not terminate SPI transaction,
+#        We DON'T send read command at first right now
+
+
 set(spiloader_slice0
     SWS # 00
     NOR sAllOne # 01
@@ -67,7 +71,7 @@ xCopyByte:
 sSendBuf:
     _IMM 0 # 30
 xCmd0:
-    _IMM 3 # 31 # Read
+    _IMM 3 # 31 # Read UNUSED: See FIXME above
 xCmd1:
     _IMM 128 # 32 # Offs0
 xCmd2:
@@ -78,13 +82,13 @@ xCmd3:
 sActivityMask: # 254 to Mask activity
     _IMM 254 # 35
 sCmdOff:
-    _IMM 0 # 36
+    _IMM 4 # 36 FIXME: See FIXME above
 sCurrentSlice:
-    _IMM 3 # 37
+    _IMM 2 # 37
 sByteOff:
     _IMM 0 # 38
 sSliceEnd:
-    _IMM 0 # 39
+    _IMM 6 # 39
 sBootFlag:
 sZero:
     _IMM 144 # 3a # To indicate boot
@@ -98,6 +102,7 @@ sOne:
     _IMM 1 # 3e
 sAllOne:
     _IMM 255 # 3f
+xEnd_Slice0:
     )
 
 set(spiloader_slice1
@@ -195,4 +200,5 @@ xFinish:
     ___ # 3d
     ___ # 3e
     ___ # 3f
+xEnd_Slice1:
     )
