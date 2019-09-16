@@ -129,7 +129,7 @@ function(asm_pass1 id in_lis)
         if(${state} STREQUAL "NUL")
             token_type(typ ${tok})
             if(${typ} STREQUAL "FILLER")
-                # Do nothing
+                inc(cur)
             elseif(${typ} STREQUAL "INST1" OR
                     ${typ} STREQUAL "IMM")
                 set(state INST1)
@@ -216,6 +216,7 @@ function(asm_pass2 out id in_lis)
             token_type(typ ${tok})
             if(${typ} STREQUAL "FILLER")
                 set(mem_${cur} 0)
+                inc(cur)
             elseif(${typ} STREQUAL "INST1" OR
                     ${typ} STREQUAL "IMM")
                 set(inst ${tok})
