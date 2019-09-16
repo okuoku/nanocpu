@@ -4,9 +4,19 @@ project(nanocpu NONE)
 set(WITH_GHDL c:/prog/ghdl/0.36-mingw64-llvm/bin/ghdl)
 
 include(./cmake/nanoasm.cmake)
+include(./sw/globals.cmake)
+include(./sw/spiloader.cmake)
 include(./tests/sw/basic0.cmake)
 
-asm_pass1(globals basic0_globals)
+asm_pass1(globals scratch_globals)
+
+# Bootloader / Firmware
+asm_pass1(spiloader_slice0 spiloader_slice0)
+asm_pass1(spiloader_slice1 spiloader_slice1)
+asm_pass2(obj_loader_slice0 spiloader_slice0 spiloader_slice0)
+asm_pass2(obj_loader_slice1 spiloader_slice1 spiloader_slice1)
+
+# Tests
 asm_pass1(basic0_slice0 basic0_slice0)
 asm_pass1(basic0_slice1 basic0_slice1)
 

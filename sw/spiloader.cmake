@@ -20,7 +20,7 @@ xSendSpi:
     # SPI Read
     NOR sAllOne # 0c
     ADD s128 # 0d 128 = Rgn02 = SPI register
-    LDP # 0e
+    LDS # 0e
     NOR sAllOne # 0f
     ADD sSendBuf # 10
     SWD #11 
@@ -55,7 +55,7 @@ xWaitLoop:
 xFirstCommand:
     NOR sAllOne # 29
 xFetchBuf:
-    ADD sCmd0 # 2a
+    ADD xCmd0 # 2a
     STA sSendBuf # 2b
     JCC xSendSpi # 2c
 xCopyByte:
@@ -101,6 +101,17 @@ sAllOne:
     )
 
 set(spiloader_slice1
+    _DEF sSendBuf 48
+    _DEF sCurrentSlice 55
+    _DEF sByteOff 56
+    _DEF sSliceEnd 57
+    _DEF sZero 58
+    _DEF s128 59
+    _DEF s64 60
+    _DEF sFour 61
+    _DEF sOne 62
+    _DEF sAllOne 63
+
     NOR sAllOne # 00
     ADD s128 # 01
     LDS # 02
@@ -172,10 +183,10 @@ xNextSlice:
     LPS # 34
 
 xFinish:
-    # Jump to slice 3 
+    # Jump to slice 2 
     NOR sAllOne # 35
     ADD sOne # 36
-    ADD sTwo # 37
+    ADD sOne # 37
     LPS # 38
     ___ # 39
     ___ # 3a
