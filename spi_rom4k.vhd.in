@@ -1,0 +1,73 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity spi_rom4k_@ROMIDENT@ is port(
+    -- SPI
+    ss_n: in std_logic;
+    sclk: in std_logic;
+    miso: out std_logic;
+    mosi: in std_logic;
+
+    -- ROM
+    clk: in std_logic);
+end entity;
+
+architecture arch_spi_rom4k_@ROMIDENT@ of spi_rom4k_@ROMIDENT@ is
+    type type_state is (wait_cmd, read_addr0, read_addr1, read_addr2,
+                        read_xfer);
+
+    signal state: type_state;
+    signal addr: std_logic_vector(11 downto 0);
+    signal data: std_logic_vector(7 downto 0);
+    signal spi_ack: std_logic;
+    signal spi_rdy: std_logic;
+    signal spi_cmd: std_logic_vector(7 downto 0);
+    signal rom_data: std_logic_vector(7 downto 0);
+begin
+    SR: entity work.spi_dsr
+    port map(
+        ss_n => ss_n,
+        sclk => sclk,
+        si => mosi,
+        so => miso,
+        data_in => rom_data,
+        data_in_ack => spi_ack,
+        data_out => spi_cmd,
+        data_out_rdy => spi_rdy);
+
+    ROM: entity work.mem_rom4k_@ROMIDENT@
+    port map(
+        clk => clk,
+        addr => addr,
+        data => rom_data);
+
+    process(ss_n, spi_rdy)
+    begin
+        if(ss_n = '1') then
+            state <= wait_cmd;
+        elsif(rising_edge(spi_rdy)) then
+            if state = wait_cmd then
+                if spi_cmd = "00000011" then
+                    state <= read_addr0;
+                end if;
+            elsif state = read_addr0 then
+                -- Addr0: 23 - 16 (Ignore)
+                state <= read_addr1;
+            elsif state = read_addr1 then
+                -- Addr1: 15 -  8
+                addr(11 downto 8) <= spi_cmd(3 downto 0);
+                state <= read_addr2;
+            elsif state = read_addr2 then
+                -- Addr2:  7 -  0
+                addr(7 downto 0) <= spi_cmd;
+                state <= read_xfer;
+            elsif state = read_xfer then
+                addr <= std_logic_vector(unsigned(addr) + 1);
+            else
+                state <= wait_cmd;
+            end if;
+        end if;
+    end process;
+
+end arch_spi_rom4k_@ROMIDENT@;
