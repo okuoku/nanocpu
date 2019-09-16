@@ -6,6 +6,7 @@ set(WITH_GHDL c:/prog/ghdl/0.36-mingw64-llvm/bin/ghdl)
 include(./cmake/nanoasm.cmake)
 include(./sw/globals.cmake)
 include(./sw/spiloader.cmake)
+include(./sw/init.cmake)
 include(./tests/sw/basic0.cmake)
 
 asm_pass1(globals scratch_globals)
@@ -13,8 +14,10 @@ asm_pass1(globals scratch_globals)
 # Bootloader / Firmware
 asm_pass1(spiloader_slice0 spiloader_slice0)
 asm_pass1(spiloader_slice1 spiloader_slice1)
+asm_pass1(init_slice2 init_slice2)
 asm_pass2(obj_loader_slice0 spiloader_slice0 spiloader_slice0)
 asm_pass2(obj_loader_slice1 spiloader_slice1 spiloader_slice1)
+asm_pass2(obj_loader_slice2 init_slice2 init_slice2)
 
 # Tests
 asm_pass1(basic0_slice0 basic0_slice0)
@@ -49,17 +52,28 @@ function(genrom id)
         NEWLINE_STYLE LF)
 endfunction()
 
+function(genspirom id)
+    set(ROMIDENT ${id})
+    configure_file(spi_rom4k.vhd.in
+        ${CMAKE_CURRENT_LIST_DIR}/gen/spi_rom4k_${id}.vhd @ONLY)
+endfunction()
+
 function(gentest_plain id)
     set(ROMIDENT ${id})
     configure_file(test_chip_plain.vhd.in
         ${CMAKE_CURRENT_LIST_DIR}/gen/test_chip_plain_${id}.vhd @ONLY)
 endfunction()
 
+genrom(spiloader obj_loader_slice0 obj_loader_slice1 obj_loader_slice2)
+genspirom(spiloader)
 genrom(basic0 out_basic0_slice0 out_basic0_slice1)
 gentest_plain(basic0)
 
 set(srcs_gen_roms
-    gen/mem_rom4k_basic0.vhd)
+    gen/mem_rom4k_basic0.vhd
+    gen/mem_rom4k_spiloader.vhd)
+set(srcs_gen_devices
+    gen/spi_rom4k_spiloader.vhd)
 set(srcs_gen_tests
     gen/test_chip_plain_basic0.vhd)
 
@@ -80,7 +94,9 @@ set(srcs_base # ordered
     )
 
 set(srcs_tests
+    test_chip_boot.vhd
     tests/ghdl_basic0.vhd
+    tests/ghdl_boot.vhd
     )
 
 function(ghdl_analyze_all)
@@ -115,7 +131,7 @@ function(add_ghdl_run id)
     add_custom_target(run-${id}
         COMMAND ${ghdl} -e ghdl_${id}
         COMMAND ${ghdl} -r -v ghdl_${id}
-        --stop-time=20000ns
+        --stop-time=2000us
         --fst=fst.out
         DEPENDS ghdl_analyze_all)
 endfunction()
@@ -123,8 +139,9 @@ endfunction()
 ghdl_analyze_all(
     ${srcs_gen_roms}
     ${srcs_base}
+    ${srcs_gen_devices}
     ${srcs_gen_tests}
     ${srcs_tests})
 
 add_ghdl_run(basic0)
-
+add_ghdl_run(boot)
