@@ -88,7 +88,7 @@ begin
 
     -- MUX: addr
     addr <= "0000000000000" & boot_addr when cpu_rst_n = '0' else
-            mbc_bank & cpu_addr;
+            "00" & mbc_bank & cpu_addr(11 downto 0); -- FIXME: Adjust width
     mbc_addr <= cpu_addr(2 downto 0);
     spi_addr <= boot_addr(1 downto 0) when cpu_rst_n = '0' and boot_spi_hold = '0' else
                 "00" when cpu_rst_n = '0' and boot_spi_hold = '1' else
