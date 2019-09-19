@@ -97,6 +97,8 @@ set(srcs_tests
     test_chip_boot.vhd
     tests/ghdl_basic0.vhd
     tests/ghdl_boot.vhd
+    tests/glue_async_chip.vhd
+    tests/async_boot.vhd
     )
 
 function(ghdl_analyze_all)
@@ -136,6 +138,16 @@ function(add_ghdl_run id)
         DEPENDS ghdl_analyze_all)
 endfunction()
 
+function(add_ghdl_run0 id)
+    set(ghdl ${WITH_GHDL})
+    add_custom_target(run-${id}
+        COMMAND ${ghdl} -e ${id}
+        COMMAND ${ghdl} -r -v ${id}
+        --stop-time=20000us
+        --fst=fst.out
+        DEPENDS ghdl_analyze_all)
+endfunction()
+
 ghdl_analyze_all(
     ${srcs_gen_roms}
     ${srcs_base}
@@ -145,3 +157,4 @@ ghdl_analyze_all(
 
 add_ghdl_run(basic0)
 add_ghdl_run(boot)
+add_ghdl_run0(async_boot) # Takes a bit longer

@@ -46,6 +46,7 @@ begin
     begin
         if(ss_n = '1') then
             state <= wait_cmd;
+            addr <= (others => '0');
         elsif(rising_edge(spi_rdy)) then
             if state = wait_cmd then
                 if spi_cmd = "00000011" then
