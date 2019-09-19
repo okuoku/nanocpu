@@ -69,7 +69,7 @@ begin
 
     DA: entity work.test_da
     port map(
-        clk => clk,
+        pclk => clk,
         rst_n => rst_n,
         success => success,
         fail => fail,
