@@ -37,7 +37,7 @@ begin
         we_n => we_n,
         sram_ce_n => sram_ce_n,
         aux0_ce_n => aux0_ce_n,
-        aux1_ce_n => aux0_ce_n,
+        aux1_ce_n => aux1_ce_n,
         addr => addr,
         data_in => cpu_data_in,
         data_out => cpu_data_out,
