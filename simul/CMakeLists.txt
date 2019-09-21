@@ -130,8 +130,8 @@ function(add_ghdl_run0 id)
         -P${WITH_GHDLDIR}/lib/ghdl/vendors/xilinx-ise
         ${id}
         COMMAND ${ghdl} -r -v ${id}
-        #--stop-time=20000us
-        --stop-time=600000ns
+        --stop-time=20000us
+        #--stop-time=1800000ns
         --fst=fst.out
         DEPENDS ghdl_analyze_all)
 endfunction()
